@@ -1,16 +1,16 @@
 package biz.piwowarczyk.untappd.stats.controller;
 
 import biz.piwowarczyk.untappd.stats.api.UntappdApi;
-import biz.piwowarczyk.untappd.stats.api.model.Beer;
 import biz.piwowarczyk.untappd.stats.api.model.CheckIn;
 import biz.piwowarczyk.untappd.stats.api.model.VenueResponse;
 import biz.piwowarczyk.untappd.stats.controller.comparator.HighestAverageComparator;
 import biz.piwowarczyk.untappd.stats.controller.mapper.ShearingStatMapper;
-import biz.piwowarczyk.untappd.stats.model.response.SharingRating;
-import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
 import biz.piwowarczyk.untappd.stats.model.request.SharingParams;
+import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
