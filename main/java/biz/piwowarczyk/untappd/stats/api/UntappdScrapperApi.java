@@ -2,7 +2,6 @@ package biz.piwowarczyk.untappd.stats.api;
 
 import biz.piwowarczyk.untappd.stats.UntappdConfig;
 import biz.piwowarczyk.untappd.stats.api.model.BeerResponse;
-import biz.piwowarczyk.untappd.stats.api.model.Response;
 import biz.piwowarczyk.untappd.stats.api.model.VenueResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,7 @@ public class UntappdScrapperApi implements UntappdApi {
         RestTemplate restTemplate = new RestTemplate();
 
         String venueUrl = new StringBuffer()
-                //.append(untappdConfig.getUrl())
-                .append("http://localhost:8081/")
+                .append(untappdConfig.getUrl())
                 .append("venue?id=")
                 .append(id)
                 .toString();
@@ -36,8 +34,7 @@ public class UntappdScrapperApi implements UntappdApi {
         RestTemplate restTemplate = new RestTemplate();
 
         String venueUrl = new StringBuffer()
-                //.append(untappdConfig.getUrl())
-                .append("http://localhost:8081/")
+                .append(untappdConfig.getUrl())
                 .append("beer?id=")
                 .append(id)
                 .toString();

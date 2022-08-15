@@ -1,2 +1,2 @@
-# -untappd.stats
-Application for untppd stats 
+# untappd.stats
+Application for untappd stats 

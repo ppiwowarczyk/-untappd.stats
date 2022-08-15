@@ -6,11 +6,12 @@ import biz.piwowarczyk.untappd.stats.api.model.CheckIn;
 import biz.piwowarczyk.untappd.stats.api.model.VenueResponse;
 import biz.piwowarczyk.untappd.stats.model.SharingRating;
 import biz.piwowarczyk.untappd.stats.model.SharingStat;
+import biz.piwowarczyk.untappd.stats.model.request.SharingParams;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +27,17 @@ public class SharingStatsController {
     @Autowired
     private HighestAverageComparator highestAverageComparator;
 
-    @RequestMapping("/sharing/stats")
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    @PostMapping("/sharing/stats")
     //@ExceptionHandler
-    public List<SharingStat> sharingStats(@RequestParam(value = "id") String venueId) {
+    public List<SharingStat> sharingStats(@RequestBody SharingParams sharingParams) {
 
-        List<String> sharingUserIds = Arrays.asList("droho", "piwowarczykp");
-
-        VenueResponse venue = untappdApi.getVenue(venueId);
+        VenueResponse venue = untappdApi.getVenue(sharingParams.venueId());
 
         Map<String, List<CheckIn>> beerRatings = venue.response().checkInList().stream()
-                .filter(checkIn -> sharingUserIds.contains(checkIn.user().id()))
+                .filter(checkIn -> sharingParams.sharingUserIds().contains(checkIn.user().id()))
+                .filter(s -> isCheckInDoneDuringSharing(s, sharingParams.startSharing(), sharingParams.endSharing()))
                 .collect(groupingBy(CheckIn::beerId));
 
         List<SharingStat> sharingStats = beerRatings.entrySet().stream()
@@ -44,6 +46,15 @@ public class SharingStatsController {
                 .collect(Collectors.toList());
 
         return sharingStats;
+    }
+
+    private boolean isCheckInDoneDuringSharing(CheckIn checkIn, String startSharingParam, String endSharingParam) {
+
+        LocalDateTime checkInDate = LocalDateTime.parse(checkIn.dateTime(), dateTimeFormatter);
+        LocalDateTime startSharing = LocalDateTime.parse(startSharingParam, dateTimeFormatter);
+        LocalDateTime endSharing = LocalDateTime.parse(endSharingParam, dateTimeFormatter);
+
+        return checkInDate.isAfter(startSharing) && checkInDate.isBefore(endSharing);
     }
 
     private Double makeAverageOfRating(List<CheckIn> value) {
