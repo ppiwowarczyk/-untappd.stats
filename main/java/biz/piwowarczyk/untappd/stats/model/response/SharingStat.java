@@ -1,4 +1,4 @@
-package biz.piwowarczyk.untappd.stats.model;
+package biz.piwowarczyk.untappd.stats.model.response;
 
 import biz.piwowarczyk.untappd.stats.api.model.Beer;
 

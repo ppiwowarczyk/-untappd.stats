@@ -4,15 +4,16 @@ import biz.piwowarczyk.untappd.stats.api.UntappdApi;
 import biz.piwowarczyk.untappd.stats.api.model.Beer;
 import biz.piwowarczyk.untappd.stats.api.model.CheckIn;
 import biz.piwowarczyk.untappd.stats.api.model.VenueResponse;
-import biz.piwowarczyk.untappd.stats.model.SharingRating;
-import biz.piwowarczyk.untappd.stats.model.SharingStat;
+import biz.piwowarczyk.untappd.stats.controller.comparator.HighestAverageComparator;
+import biz.piwowarczyk.untappd.stats.controller.mapper.ShearingStatMapper;
+import biz.piwowarczyk.untappd.stats.model.response.SharingRating;
+import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
 import biz.piwowarczyk.untappd.stats.model.request.SharingParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,6 +27,8 @@ public class SharingStatsController {
     private UntappdApi untappdApi;
     @Autowired
     private HighestAverageComparator highestAverageComparator;
+    @Autowired
+    private ShearingStatMapper shearingStatMapper;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -41,7 +44,7 @@ public class SharingStatsController {
                 .collect(groupingBy(CheckIn::beerId));
 
         List<SharingStat> sharingStats = beerRatings.entrySet().stream()
-                .map(s -> mapToShearingStat(s.getKey(), s.getValue()))
+                .map(s -> shearingStatMapper.apply(s))
                 .sorted(highestAverageComparator.reversed())
                 .collect(Collectors.toList());
 
@@ -55,28 +58,5 @@ public class SharingStatsController {
         LocalDateTime endSharing = LocalDateTime.parse(endSharingParam, dateTimeFormatter);
 
         return checkInDate.isAfter(startSharing) && checkInDate.isBefore(endSharing);
-    }
-
-    private Double makeAverageOfRating(List<CheckIn> value) {
-
-        return value.stream()
-                .map(CheckIn::rating)
-                .mapToDouble(s -> Double.valueOf(s))
-                .average()
-                .orElse(0.0);
-    }
-
-    private SharingStat mapToShearingStat(String key, List<CheckIn> checkInList) {
-
-        Beer beer = untappdApi.getBeer(key).response();
-        Double sharingRatingAverage = makeAverageOfRating(checkInList);
-
-        SharingRating sharingRating = new SharingRating(
-                sharingRatingAverage,
-                sharingRatingAverage - Double.valueOf(beer.beerRaiting().rating()),
-                checkInList.size()
-        );
-
-        return new SharingStat(beer, sharingRating);
     }
 }
