@@ -1,4 +1,4 @@
-package biz.piwowarczyk.untappd.stats.controller.comparator;
+package biz.piwowarczyk.untappd.stats.generator.comparator;
 
 import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
 import org.springframework.stereotype.Component;

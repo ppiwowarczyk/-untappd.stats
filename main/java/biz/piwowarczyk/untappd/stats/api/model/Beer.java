@@ -6,6 +6,7 @@ public record Beer(
         String style,
         String abv,
         Brewery brewery,
-        BeerRating beerRaiting
+        BeerRating beerRaiting,
+        String img
         ) {
 }

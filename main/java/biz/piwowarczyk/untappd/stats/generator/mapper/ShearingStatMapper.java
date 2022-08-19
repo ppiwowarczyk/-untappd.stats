@@ -1,4 +1,4 @@
-package biz.piwowarczyk.untappd.stats.controller.mapper;
+package biz.piwowarczyk.untappd.stats.generator.mapper;
 
 import biz.piwowarczyk.untappd.stats.api.UntappdApi;
 import biz.piwowarczyk.untappd.stats.api.model.Beer;
