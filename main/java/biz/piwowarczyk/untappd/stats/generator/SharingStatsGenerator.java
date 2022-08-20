@@ -4,12 +4,13 @@ import biz.piwowarczyk.untappd.stats.api.UntappdApi;
 import biz.piwowarczyk.untappd.stats.api.model.CheckIn;
 import biz.piwowarczyk.untappd.stats.api.model.User;
 import biz.piwowarczyk.untappd.stats.api.model.VenueResponse;
-
 import biz.piwowarczyk.untappd.stats.generator.comparator.HighestAverageComparator;
 import biz.piwowarczyk.untappd.stats.generator.comparator.HighestUserAverageComparator;
+import biz.piwowarczyk.untappd.stats.generator.comparator.StyleValueComparator;
 import biz.piwowarczyk.untappd.stats.generator.mapper.ShearingStatMapper;
 import biz.piwowarczyk.untappd.stats.generator.mapper.UserStatMapper;
 import biz.piwowarczyk.untappd.stats.model.request.SharingParams;
+import biz.piwowarczyk.untappd.stats.model.response.FlatStyleStat;
 import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
 import biz.piwowarczyk.untappd.stats.model.response.UserStat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ public class SharingStatsGenerator {
     private HighestAverageComparator highestAverageComparator;
     @Autowired
     private HighestUserAverageComparator highestUserAverageComparator;
+    @Autowired
+    private StyleValueComparator styleValueComparator;
     @Autowired
     private ShearingStatMapper shearingStatMapper;
     @Autowired
@@ -65,12 +68,25 @@ public class SharingStatsGenerator {
                 .filter(s -> isCheckInDoneDuringSharing(s, sharingParams.startSharing(), sharingParams.endSharing()))
                 .collect(groupingBy(CheckIn::user));
 
-        List<UserStat>  userStats = userListMap.entrySet().stream()
+        List<UserStat> userStats = userListMap.entrySet().stream()
                 .map(s -> userStatMapper.apply(s))
                 .sorted(highestUserAverageComparator.reversed())
                 .collect(Collectors.toList());
 
         return userStats;
+    }
+
+    public List<FlatStyleStat> generateStyleStats(SharingParams sharingParams) {
+
+        List<FlatStyleStat> flatStyleStat = this.generateStats(sharingParams)
+                .stream()
+                .collect(groupingBy(s -> s.beer().style()))
+                .entrySet()
+                .stream()
+                .map(s -> new FlatStyleStat(s.getKey(), s.getValue().size()))
+                .sorted(styleValueComparator.reversed())
+                .collect(Collectors.toList());
+        return flatStyleStat;
     }
 
     private boolean isCheckInDoneDuringSharing(CheckIn checkIn, String startSharingParam, String endSharingParam) {

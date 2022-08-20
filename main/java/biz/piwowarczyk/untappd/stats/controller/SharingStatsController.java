@@ -2,10 +2,7 @@ package biz.piwowarczyk.untappd.stats.controller;
 
 import biz.piwowarczyk.untappd.stats.generator.SharingStatsGenerator;
 import biz.piwowarczyk.untappd.stats.model.request.SharingParams;
-import biz.piwowarczyk.untappd.stats.model.response.FlatSharingStat;
-import biz.piwowarczyk.untappd.stats.model.response.FlatUserStat;
-import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
-import biz.piwowarczyk.untappd.stats.model.response.UserStat;
+import biz.piwowarczyk.untappd.stats.model.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -73,6 +70,13 @@ public class SharingStatsController {
                         s.sharingRating().totalSharingCheckIns()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @PostMapping("/sharing/style/stats/flourish")
+    //@ExceptionHandler
+    public List<FlatStyleStat> sharingStyleStatsFlourish(@RequestBody SharingParams sharingParams) {
+
+        return sharingStatsGenerator.generateStyleStats(sharingParams);
     }
 
 }
