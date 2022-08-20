@@ -11,6 +11,7 @@ import biz.piwowarczyk.untappd.stats.generator.mapper.ShearingStatMapper;
 import biz.piwowarczyk.untappd.stats.generator.mapper.UserStatMapper;
 import biz.piwowarczyk.untappd.stats.model.request.SharingParams;
 import biz.piwowarczyk.untappd.stats.model.response.FlatStyleStat;
+import biz.piwowarczyk.untappd.stats.model.response.FlatTimePerCheck;
 import biz.piwowarczyk.untappd.stats.model.response.SharingStat;
 import biz.piwowarczyk.untappd.stats.model.response.UserStat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,6 +43,46 @@ public class SharingStatsGenerator {
     private UserStatMapper userStatMapper;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    public List<FlatTimePerCheck> generateTimePerCheckStats(SharingParams sharingParams) {
+
+        VenueResponse venue = untappdApi.getVenue(sharingParams.venueId());
+
+        List<FlatTimePerCheck> list = new ArrayList<>();
+
+        List<CheckIn> collect = venue.response().checkInList().stream()
+                .filter(checkIn -> sharingParams.sharingUserIds().contains(checkIn.user().id()))
+                .filter(s -> isCheckInDoneDuringSharing(s, sharingParams.startSharing(), sharingParams.endSharing()))
+                .collect(Collectors.toList());
+
+        // create range
+        long minutesOffset = 30;
+        LocalDateTime currentSharing = LocalDateTime.parse(sharingParams.startSharing(), dateTimeFormatter);
+        LocalDateTime endSharing = LocalDateTime.parse(sharingParams.endSharing(), dateTimeFormatter);
+
+        while (currentSharing.isBefore(endSharing)) {
+
+            LocalDateTime periodStart = currentSharing;
+            LocalDateTime periodEnd = currentSharing.plusMinutes(minutesOffset);
+
+            List<CheckIn> collect1 = collect.stream()
+                    .filter(checkIn -> sharingParams.sharingUserIds().contains(checkIn.user().id()))
+                    .filter(s -> isCheckInDoneDuringSharing(s, periodStart, periodEnd))
+                    .collect(Collectors.toList());
+
+            String label = new StringBuilder()
+                    .append(currentSharing.format(dateTimeFormatter))
+                    .append(" to ")
+                    .append(currentSharing.plusMinutes(minutesOffset).format(dateTimeFormatter)).toString();
+
+
+            list.add(new FlatTimePerCheck(label, collect1.size()));
+
+            currentSharing = currentSharing.plusMinutes(minutesOffset);
+        }
+
+        return list;
+    }
 
     public List<SharingStat> generateStats(SharingParams sharingParams) {
 
@@ -96,5 +138,11 @@ public class SharingStatsGenerator {
         LocalDateTime endSharing = LocalDateTime.parse(endSharingParam, dateTimeFormatter);
 
         return checkInDate.isAfter(startSharing) && checkInDate.isBefore(endSharing);
+    }
+
+    private boolean isCheckInDoneDuringSharing(CheckIn checkIn, LocalDateTime startSharingParam, LocalDateTime endSharingParam) {
+
+        LocalDateTime checkInDate = LocalDateTime.parse(checkIn.dateTime(), dateTimeFormatter);
+        return checkInDate.isAfter(startSharingParam) && checkInDate.isBefore(endSharingParam);
     }
 }

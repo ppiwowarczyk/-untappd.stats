@@ -79,4 +79,11 @@ public class SharingStatsController {
         return sharingStatsGenerator.generateStyleStats(sharingParams);
     }
 
+    @PostMapping("/sharing/time/stats/flourish")
+    //@ExceptionHandler
+    public List<FlatTimePerCheck> sharingTimeStatsFlourish(@RequestBody SharingParams sharingParams) {
+
+        return sharingStatsGenerator.generateTimePerCheckStats(sharingParams);
+    }
+
 }
