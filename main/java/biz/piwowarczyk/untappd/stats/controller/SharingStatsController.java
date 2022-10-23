@@ -35,7 +35,7 @@ public class SharingStatsController {
         return sharingStatsGenerator.generateStats(sharingParams)
                 .stream()
                 .map(s -> new FlatSharingStat(
-                        count.incrementAndGet(),
+                        String.valueOf(count.incrementAndGet()),
                         s.beer().img(),
                         s.beer().brewery().name(),
                         s.beer().name(),

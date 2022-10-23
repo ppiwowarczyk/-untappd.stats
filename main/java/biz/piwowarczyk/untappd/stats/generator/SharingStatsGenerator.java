@@ -66,7 +66,6 @@ public class SharingStatsGenerator {
             LocalDateTime periodEnd = currentSharing.plusMinutes(minutesOffset);
 
             List<CheckIn> collect1 = collect.stream()
-                    .filter(checkIn -> sharingParams.sharingUserIds().contains(checkIn.user().id()))
                     .filter(s -> isCheckInDoneDuringSharing(s, periodStart, periodEnd))
                     .collect(Collectors.toList());
 

@@ -1,7 +1,7 @@
 package biz.piwowarczyk.untappd.stats.model.response;
 
 public record FlatSharingStat(
-        int lp,
+        String lp,
         String img,
         String breweryName,
         String beerName,
